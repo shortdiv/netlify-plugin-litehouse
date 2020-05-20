@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "local": "node -e 'require(\"./index.js\").onSuccess()'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "lighthouse": "^5.6.0"
+    "chrome-launcher": "^0.13.2",
+    "http-server": "^0.12.3",
+    "lighthouse": "^5.6.0",
+    "puppeteer": "^3.1.0"
   }
 }
