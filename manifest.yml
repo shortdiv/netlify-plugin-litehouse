@@ -1,0 +1,5 @@
+name: netlify-plugin-lighthouse
+inputs:
+  - name: audit_url
+    required: false
+    description: Url of the site to audit, defaults to scanning the current built version of the site

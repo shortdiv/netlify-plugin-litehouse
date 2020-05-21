@@ -31,7 +31,6 @@ const getServer = (url, serveDir) => {
 };
 
 module.exports = {
-  name: "netlify-plugin-lighthouse",
   onSuccess: async ({
     constants: { PUBLISH_DIR: serveDir = process.env.PUBLISH_DIR } = {},
     utils,
