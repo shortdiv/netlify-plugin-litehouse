@@ -63,9 +63,7 @@ module.exports = {
           },
         },
         status: {
-          show: ({ summary }) => {
-            console.log(summary);
-          },
+          show: () => undefined,
         },
       };
 
@@ -117,8 +115,10 @@ module.exports = {
           .filter(([id, expected]) => belowThreshold(id, expected, categories))
           .map(([id, expected]) => getError(id, expected, categories));
 
+        const summary = JSON.stringify({ results: categories }, null, 2);
+        console.log(summary);
         utils.status.show({
-          summary: JSON.stringify({ results: categories }, null, 2),
+          summary,
         });
 
         if (errors.length > 0) {
