@@ -58,13 +58,13 @@ module.exports = {
     try {
       utils = utils || {
         build: {
-          failBuild: (message) => {
+          failBuild: () => {
             process.exit(1);
           },
         },
         status: {
-          show: (message) => {
-            console.log(message);
+          show: ({ summary }) => {
+            console.log(summary);
           },
         },
       };
@@ -117,7 +117,9 @@ module.exports = {
           .filter(([id, expected]) => belowThreshold(id, expected, categories))
           .map(([id, expected]) => getError(id, expected, categories));
 
-        utils.status.show(JSON.stringify({ results: categories }, null, 2));
+        utils.status.show({
+          summary: JSON.stringify({ results: categories }, null, 2),
+        });
 
         if (errors.length > 0) {
           throw new Error(errors.join("\n"));
