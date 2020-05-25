@@ -2,9 +2,11 @@ const httpServer = require("http-server");
 const puppeteer = require("puppeteer");
 const lighthouse = require("lighthouse");
 const chromeLauncher = require("chrome-launcher");
+require("dotenv").config();
 
 const getServer = (url, serveDir) => {
   if (url) {
+    console.log(`Scanning url '${url}'`);
     // return a mock server for readability
     const server = {
       listen: async (func) => {
@@ -30,21 +32,46 @@ const getServer = (url, serveDir) => {
   return { url: `http://${host}:${port}`, server };
 };
 
+const belowThreshold = (id, expected, results) => {
+  const category = results.find((c) => c.id === id);
+  if (!category) {
+    console.warn("Could not find category", id);
+  }
+  const actual = category ? category.score : Number.MAX_SAFE_INTEGER;
+  return actual < expected;
+};
+
+const getError = (id, expected, results) => {
+  const category = results.find((c) => c.id === id);
+  return `Expected category '${category.title}' to be greater or equal to '${expected}' but got '${category.score}'`;
+};
+
 module.exports = {
   onSuccess: async ({
     constants: { PUBLISH_DIR: serveDir = process.env.PUBLISH_DIR } = {},
     utils,
-    inputs: { audit_url: auditUrl = process.env.AUDIT_URL } = {},
+    inputs: {
+      audit_url: auditUrl = process.env.AUDIT_URL,
+      thresholds = process.env.THRESHOLDS || {},
+    } = {},
   } = {}) => {
     try {
       utils = utils || {
         build: {
           failBuild: (message) => {
-            console.error(message);
             process.exit(1);
           },
         },
+        status: {
+          show: (message) => {
+            console.log(message);
+          },
+        },
       };
+
+      if (typeof thresholds === "string") {
+        thresholds = JSON.parse(thresholds);
+      }
 
       const { server, url } = getServer(auditUrl, serveDir);
       const browserFetcher = puppeteer.createBrowserFetcher();
@@ -53,7 +80,7 @@ module.exports = {
         throw new Error("Could not find local browser");
       }
       const info = await browserFetcher.revisionInfo(revisions[0]);
-      
+
       const { error, results } = await new Promise((resolve) => {
         server.listen(async () => {
           let chrome;
@@ -75,14 +102,26 @@ module.exports = {
             if (chrome) {
               await chrome.kill().catch(() => undefined);
             }
-            server.close()
+            server.close();
           }
         });
       });
       if (error) {
         throw error;
       } else {
-        console.log(results);
+        const categories = Object.values(
+          results.lhr.categories
+        ).map(({ title, score, id }) => ({ title, score, id }));
+
+        const errors = Object.entries(thresholds)
+          .filter(([id, expected]) => belowThreshold(id, expected, categories))
+          .map(([id, expected]) => getError(id, expected, categories));
+
+        utils.status.show(JSON.stringify({ results: categories }, null, 2));
+
+        if (errors.length > 0) {
+          throw new Error(errors.join("\n"));
+        }
       }
     } catch (error) {
       console.error(`\nError: ${error.message}\n`);
