@@ -7,7 +7,11 @@
     "local": "node -e 'require(\"./index.js\").onSuccess()'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "netlify",
+    "netlify-plugin",
+    "lighthouse"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
