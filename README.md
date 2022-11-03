@@ -2,7 +2,7 @@
 
 A Netlify plugin to generate a lighthouse report for every deploy
 
-> NOTICE: This is an experimental feature. Subject to lots of change.
+> NOTICE: This is neither maintained nor an official netlify package. For the official _*netlify*_ package go to -> https://www.npmjs.com/package/@netlify/plugin-lighthouse
 
 ## Usage
 This plugin can be included via npm. Install it as a dependency with the following command:
